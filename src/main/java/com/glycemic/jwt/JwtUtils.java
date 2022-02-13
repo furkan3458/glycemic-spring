@@ -10,13 +10,10 @@ import org.springframework.stereotype.Component;
 
 import com.glycemic.security.UserDetailsImpl;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
 
 @Component
 public class JwtUtils {
@@ -50,13 +47,7 @@ public class JwtUtils {
 		return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getExpiration().getTime();
 	}
 
-	public boolean validateToken(String authToken) {
-		try {
-			Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
-			return true;
-		} catch (SignatureException | MalformedJwtException | UnsupportedJwtException | ExpiredJwtException | IllegalArgumentException ex) {
-			logger.debug("Validate token error {}",ex.getMessage());
-			return false;
-		}
+	public void validateToken(String authToken) throws JwtException{
+		Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
 	}
 }

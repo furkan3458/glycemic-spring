@@ -35,7 +35,6 @@ public class Users extends BaseModel implements Serializable{
 
 	private static final long serialVersionUID = -1915197722847011881L;
 
-	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -56,6 +55,8 @@ public class Users extends BaseModel implements Serializable{
 
 	private String fullname;
 	
+	private Boolean enable;
+	
 	@ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
 	@NotNull(message = "Ülke kısmı boş bırakılamaz.", groups = UserValidator.class)
 	private Country country;
@@ -66,4 +67,24 @@ public class Users extends BaseModel implements Serializable{
 				inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private List<Roles> roles;
 	
+	public Users(Long id, String email, String password, String name, String surname, 
+			String fullname, Boolean enable, Country country) {
+		this.id = id;
+		this.email = email;
+		this.password = password;
+		this.name = name;
+		this.surname = surname;
+		this.fullname = fullname;
+		this.enable = enable;
+		this.country = country;
+	}
+	
+	public Users(String email, String password, String name, String surname, 
+			Boolean enable) {
+		this.email = email;
+		this.password = password;
+		this.name = name;
+		this.surname = surname;
+		this.enable = enable;
+	}
 }

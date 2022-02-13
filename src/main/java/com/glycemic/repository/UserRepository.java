@@ -11,4 +11,6 @@ import com.glycemic.model.Users;
 public interface UserRepository extends JpaRepository<Users, Long> {
 
 	public Optional<Users> findByEmail(String email);
+
+	Boolean existsByEmail(String email);
 }

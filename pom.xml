@@ -8,7 +8,7 @@
 		<version>2.6.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.app</groupId>
+	<groupId>com.glycemic</groupId>
 	<artifactId>glycemic</artifactId>
 	<version>0.0.1</version>
 	<name>Glycemic</name>

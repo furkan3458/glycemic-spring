@@ -19,23 +19,45 @@ public class UserDetailsImpl implements UserDetails {
 	private Long id;
 	
 	private String fullname;
+	
+	private String name;
+	
+	private String surname;
 
 	private String email;
 	
 	private Country country;
+	
+	private Boolean enable;
+	
+	private String createdBy;
+	
+	private Long createdDate;
+	
+	private String modifiedBy;
+	
+	private Long modifiedDate;
 
 	@JsonIgnore
 	private String password;
 
 	private Collection<? extends GrantedAuthority> authorities;
 
-	public UserDetailsImpl(Long id, String email, String password, String fullname, Country country,
+	public UserDetailsImpl(Long id, String email, String password, String name, String surname, String fullname, 
+			Boolean enable, Country country, String createdBy, Long createdDate, String modifiedBy, Long modifiedDate,
 			Collection<? extends GrantedAuthority> authorities) {
 		this.id = id;
 		this.email = email;
 		this.fullname = fullname;
+		this.name = name;
+		this.surname = surname;
 		this.password = password;
 		this.country = country;
+		this.enable = enable;
+		this.createdBy = createdBy;
+		this.createdDate = createdDate;
+		this.modifiedBy = modifiedBy;
+		this.modifiedDate = modifiedDate;
 		this.authorities = authorities;
 	}
 
@@ -46,10 +68,17 @@ public class UserDetailsImpl implements UserDetails {
 
 		return new UserDetailsImpl(
 				user.getId(), 
-				user.getEmail(), 
+				user.getEmail(),
+				user.getPassword(),
+				user.getName(),
+				user.getSurname(),
 				user.getFullname(),
-				user.getPassword(), 
+				user.getEnable(),
 				user.getCountry(),
+				user.getCreatedBy(),
+				user.getCreatedDate(),
+				user.getModifiedBy(),
+				user.getModifiedDate(),
 				authorities);
 	}
 
@@ -80,8 +109,36 @@ public class UserDetailsImpl implements UserDetails {
 		return fullname;
 	}
 	
+	public String getName() {
+		return name;
+	}
+	
+	public String getSurname() {
+		return surname;
+	}
+	
 	public Country getCountry() {
 		return country;
+	}
+	
+	public Boolean getEnable() {
+		return enable;
+	}
+	
+	public String getCreatedBy() {
+		return createdBy;
+	}
+	
+	public Long getCreatedDate() {
+		return createdDate;
+	}
+	
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+	
+	public Long getModifiedDate() {
+		return modifiedDate;
 	}
 
 	@Override
