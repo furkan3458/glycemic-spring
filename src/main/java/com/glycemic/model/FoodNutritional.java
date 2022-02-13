@@ -12,8 +12,10 @@ import javax.persistence.Table;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.glycemic.validator.FoodNutritionalIdValidator;
 import com.glycemic.validator.FoodNutritionalValidator;
+import com.glycemic.view.NutritionalView;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +35,7 @@ public class FoodNutritional extends BaseModel implements Serializable{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Min(value = 1, message = "Id kısmı 1 den küçük olamaz.", groups=FoodNutritionalIdValidator.class)
+	@JsonView(NutritionalView.ExceptFood.class)
 	private Long id;
 	
 	@ManyToOne(cascade = CascadeType.DETACH)
@@ -40,6 +43,11 @@ public class FoodNutritional extends BaseModel implements Serializable{
 	private Food food;
 	
 	@ManyToOne(cascade = CascadeType.DETACH)
-	@NotNull(message="Besin değerleri alanı boş bırakılmaz.", groups=FoodNutritionalValidator.class)
+	@NotNull(message="Besin değeri türü boş bırakılmaz.", groups=FoodNutritionalValidator.class)
+	@JsonView(NutritionalView.ExceptFood.class)
 	private Nutritional nutritional;
+	
+	@NotNull(message="Besin değerleri alanı boş bırakılmaz.", groups=FoodNutritionalValidator.class)
+	@JsonView(NutritionalView.ExceptFood.class)
+	private Integer rate;
 }

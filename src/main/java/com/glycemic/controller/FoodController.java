@@ -1,11 +1,12 @@
 package com.glycemic.controller;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,9 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.glycemic.model.Food;
 import com.glycemic.service.FoodService;
 import com.glycemic.util.ResultTemplate;
+import com.glycemic.validator.FoodAllValidator;
+import com.glycemic.validator.FoodValidator;
+import com.glycemic.view.NutritionalView;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
@@ -29,35 +33,40 @@ public class FoodController {
 	@Autowired
 	private FoodService foodService;
 	
-	@GetMapping("/list")
+	@GetMapping(path="/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> list() {
-        return ResponseEntity.ok(foodService.foodsList());
+        return ResponseEntity.ok(foodService.foodList());
     }
 
-    @GetMapping("/list/user")
+    @GetMapping(path="/list/user", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> userFoodList() {
-    	
     	return ResponseEntity.ok(foodService.userFoodList());
     }
 
-    @DeleteMapping("/delete")
-    public LinkedHashMap<ResultTemplate, Object> foodDelete(@RequestParam long gid) {
-        return foodService.foodDelete(gid);
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping(path="/delete", params= {"id"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> foodDelete(@RequestParam("id") Long id) {
+    	return ResponseEntity.ok(foodService.delete(id));
     }
 
-    @PutMapping("/update")
-    public LinkedHashMap<ResultTemplate,Object> foodUpdate(@RequestBody Food food){
-        return foodService.update(food);
+    @PutMapping(path="/insert", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> foodInsert(@RequestBody @Validated(value = FoodValidator.class) Food food){
+    	return ResponseEntity.ok(foodService.insert(food));
+    }
+    
+    @PostMapping(path="/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> foodUpdate(@RequestBody @Validated(value = FoodAllValidator.class) Food food){
+    	return ResponseEntity.ok(foodService.update(food));
     }
 
-    @PostMapping("/check")
-    public Map<ResultTemplate, Object> foodCheck(@RequestParam long gid) {
-    	return foodService.check(gid);
+    @PostMapping(path="/check", params= {"id"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> foodCheck(@RequestParam("id") Long id) {
+    	return ResponseEntity.ok(foodService.check(id));
     }
 
-    @JsonView(Views.ExceptList.class)
-    @GetMapping(path="/foodGet", params= {"name"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public LinkedHashMap<ResultTemplate, Object> foodGet(@RequestParam String name) {
-    	return foodService.getFood(name);
+    @JsonView(NutritionalView.ExceptFood.class)
+    @GetMapping(path="/get", params= {"name"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> foodGetByName(@RequestParam("name") String name) {
+    	return ResponseEntity.ok(foodService.getByName(name));
     }
 }

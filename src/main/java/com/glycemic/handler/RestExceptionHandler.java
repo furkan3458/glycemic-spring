@@ -24,7 +24,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         
 		String message = ex.getAllErrors().get(0).getDefaultMessage();
 		
-		Error error = new Error(HttpStatus.BAD_REQUEST, ErrorHandleType.ARGUMENT_NOT_VALID, message, ex.getBindingResult().toString() ,LocalDateTime.now().toLocalDate().toString(), LocalDateTime.now().toLocalTime().toString());
+		Error error = new Error(HttpStatus.BAD_REQUEST, ErrorHandleType.ARGUMENT_NOT_VALID, message, ex.getObjectName() ,LocalDateTime.now().toLocalDate().toString(), LocalDateTime.now().toLocalTime().toString());
 
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
 	}

@@ -1,15 +1,7 @@
 package com.glycemic.config;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.servlet.Filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,9 +23,9 @@ import com.glycemic.security.UserDetailsServiceImpl;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(
-		// securedEnabled = true,
-		// jsr250Enabled = true,
-		securedEnabled = true)
+		securedEnabled = true,
+		jsr250Enabled = true,
+		prePostEnabled = true)
 public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter{
 
 	@Autowired
@@ -45,6 +37,13 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter{
 	private static final String[] AUTH_URLS = {
 			"/user/**", 
 		    "/auth/logout",
+		    "/food/insert",
+		    "/food/delete",
+		    "/food/update",
+		    "/food/list/user",
+		    "/category/insert",
+		    "/category/update",
+		    "/category/delete",
 	};
 	
 	@Bean

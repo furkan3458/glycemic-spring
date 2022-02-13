@@ -47,7 +47,7 @@ public class AuditAwareConfigurer implements AuditorAware<String> {
             return false;
         }
         
-        return authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_admin"));
+        return authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
     }
     
     public boolean hasRole(String role) {

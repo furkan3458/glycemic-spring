@@ -152,7 +152,7 @@ public class AuthController {
 			Roles userRole = roleRepo.findByName(ERole.ROLE_USER)
 					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 			
-			Country country = countryRepo.findById(signup.getCountry().getId()).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+			Country country = countryRepo.findById(signup.getCountry().getId()).orElseThrow(() -> new RuntimeException("Error: Country is not found."));
 			
 			roles.add(userRole);
 			user.setEnable(false);

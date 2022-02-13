@@ -12,6 +12,8 @@ import javax.persistence.Transient;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.glycemic.serializer.CategorySerializer;
 import com.glycemic.validator.CategoryIdValidator;
 import com.glycemic.validator.CategoryValidator;
 
@@ -26,7 +28,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=false)
-public class Category extends BaseModel implements Serializable{
+public class Category extends BaseModel implements Serializable, Cloneable{
 
 	private static final long serialVersionUID = 8290255678413836321L;
 	
@@ -40,7 +42,21 @@ public class Category extends BaseModel implements Serializable{
 	
 	private String url;
 	
+	@JsonSerialize(using = CategorySerializer.class)
 	@Transient
 	private List<Food> foods;
+	
+	@Override
+	public String toString(){
+		return "Category [id=" + id + ", name=" + name + ", url="+url+"]";
+	}
+	
+	public Category copy() {
+		try {
+			return (Category) this.clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
+	}
 	
 }

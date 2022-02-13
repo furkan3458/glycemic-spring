@@ -10,14 +10,18 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.glycemic.util.EFoodStatus;
 import com.glycemic.validator.FoodIdValidator;
 import com.glycemic.validator.FoodValidator;
+import com.glycemic.view.NutritionalView;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,7 +34,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Food extends BaseModel implements Serializable{
+@JsonView(NutritionalView.ExceptFood.class)
+public class Food extends BaseModel implements Serializable,Cloneable{
 
 	private static final long serialVersionUID = 1821243022594572233L;
 
@@ -49,14 +54,28 @@ public class Food extends BaseModel implements Serializable{
 	@NotNull(message="Resim kısmı boş bırakılamaz.", groups=FoodValidator.class)
 	private String image;
 	
+	@NotNull(message="Kaynak kısmı boş bırakılamaz.", groups=FoodValidator.class)
+	private String source;
+	
 	private String url;
 	
 	private boolean enabled;
 	
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @NotNull
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH, optional = false)
+    @JoinColumn(name = "category_id", insertable = false, updatable = false)
+	@NotNull(message="Kategori kısmı boş bırakılamaz.", groups=FoodValidator.class)
     private Category category;
+
+	private EFoodStatus foodStatus;
 	
 	@Transient
 	private List<FoodNutritional> foodNutritional;
+	
+	public Food copy() {
+		try {
+			return (Food) this.clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
+	}
 }

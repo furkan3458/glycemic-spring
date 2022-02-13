@@ -10,8 +10,10 @@ import javax.persistence.Table;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.glycemic.validator.NutritionalIdValidator;
 import com.glycemic.validator.NutritionalValidator;
+import com.glycemic.view.NutritionalView;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,6 +26,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=false)
+@JsonView(NutritionalView.ExceptFood.class)
 public class Nutritional extends BaseModel implements Serializable {
 
 	private static final long serialVersionUID = 1859918222450635883L;
