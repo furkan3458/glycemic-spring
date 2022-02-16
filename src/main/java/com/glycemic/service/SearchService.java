@@ -30,6 +30,8 @@ public class SearchService {
 		
 		Page<Food> foods = null;
 		
+		page = page <= 0 ? 1 : page;
+		
 		if(category.equals("all")) {
 			Pageable pageable = PageRequest.of(page-1, 3);
 	    	foods = foodRepo.foodsNameWithAll(q,pageable);

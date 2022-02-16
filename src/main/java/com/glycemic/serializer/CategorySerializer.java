@@ -33,9 +33,9 @@ public class CategorySerializer extends StdSerializer<List<Food>>{
         List<HashMap<String,Object>> ids = new ArrayList<>();
         for (Food item : items) {
         	HashMap<String,Object> hash = new HashMap<>();
-        	hash.put("gid", item.getId());
+        	hash.put("id", item.getId());
         	hash.put("name", item.getName());
-        	hash.put("glycemicindex", item.getGlycemicIndex());
+        	hash.put("glycemicIndex", item.getGlycemicIndex());
         	hash.put("image", item.getImage());
         	hash.put("source", item.getSource());
         	hash.put("url", item.getUrl());
@@ -44,6 +44,7 @@ public class CategorySerializer extends StdSerializer<List<Food>>{
         	hash.put("modifiedBy", item.getModifiedBy());
         	hash.put("modifiedDate", item.getModifiedDate());
         	hash.put("enabled", item.isEnabled());
+        	hash.put("foodStatus", item.getFoodStatus().toString());
         	ids.add(hash);
         }
         generator.writeObject(ids);

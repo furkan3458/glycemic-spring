@@ -14,6 +14,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -51,6 +52,21 @@ public class Food extends BaseModel implements Serializable,Cloneable{
 	@NotNull(message="Glisemik indeks kısmı boş bırakılamaz.", groups=FoodValidator.class)
 	private Integer glycemicIndex;
 	
+	@NotNull(message="İnsülin kısmı boş bırakılamaz.", groups=FoodValidator.class)
+	private Integer insulin;
+	
+	@NotNull(message="Kalori kısmı boş bırakılamaz.", groups=FoodValidator.class)
+	private Integer calori;
+	
+	@NotNull(message="Karbonhidrat kısmı boş bırakılamaz.", groups=FoodValidator.class)
+	private Float carbs;
+	
+	@NotNull(message="Porsiyon kısmı boş bırakılamaz.", groups=FoodValidator.class)
+	private Float serving;
+	
+	@NotNull(message="Asitlik kısmı boş bırakılamaz.", groups=FoodValidator.class)
+	private Float acidity;
+	
 	@NotNull(message="Resim kısmı boş bırakılamaz.", groups=FoodValidator.class)
 	private String image;
 	
@@ -61,9 +77,10 @@ public class Food extends BaseModel implements Serializable,Cloneable{
 	
 	private boolean enabled;
 	
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH, optional = false)
-    @JoinColumn(name = "category_id", insertable = false, updatable = false)
+	
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
 	@NotNull(message="Kategori kısmı boş bırakılamaz.", groups=FoodValidator.class)
+	@JoinColumn(name = "category_id")
     private Category category;
 
 	private EFoodStatus foodStatus;

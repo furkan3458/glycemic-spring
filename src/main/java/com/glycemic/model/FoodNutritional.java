@@ -50,4 +50,8 @@ public class FoodNutritional extends BaseModel implements Serializable{
 	@NotNull(message="Besin değerleri alanı boş bırakılmaz.", groups=FoodNutritionalValidator.class)
 	@JsonView(NutritionalView.ExceptFood.class)
 	private Integer rate;
+	
+	@NotNull(message="Besin değerleri yüzdelik alanı boş bırakılmaz.", groups=FoodNutritionalValidator.class)
+	@JsonView(NutritionalView.ExceptFood.class)
+	private Integer percent;
 }

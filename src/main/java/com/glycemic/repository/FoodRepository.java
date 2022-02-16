@@ -33,10 +33,10 @@ public Optional<Food> findByNameEqualsIgnoreCase(String name);
     public Page<Food>findAllPageable(Pageable pageable);
     
     @Query(value="SELECT F.* FROM FOOD F INNER JOIN CATEGORY C ON f.CATEGORY_ID = C.ID WHERE LOWER(F.NAME) LIKE LOWER(CONCAT('%',:name,'%')) AND C.URL LIKE :category",nativeQuery=true,
-    		countQuery="SELECT COUNT(F.*) FROM FOOD F INNER JOIN CATEGORY C ON f.CATEGORY_ID = C.ID WHERE LOWER(F.NAME) LIKE LOWER(CONCAT('%',:name,'%')) AND C.URL LIKE :category")
+    		countQuery="SELECT COUNT(F.ID) FROM FOOD F INNER JOIN CATEGORY C ON f.CATEGORY_ID = C.ID WHERE LOWER(F.NAME) LIKE LOWER(CONCAT('%',:name,'%')) AND C.URL LIKE :category")
     public Page<Food> foodsNameWithCategoryJoinAndLimited(@Param("name") String name, @Param("category") String category, Pageable pageable);
     
-    @Query(value="SELECT F.* FROM FOOD F WHERE LOWER(F.NAME) LIKE LOWER(CONCAT('%',:name,'%'))",nativeQuery=true,
-    		countQuery="SELECT COUNT(F.*) FROM FOOD F WHERE LOWER(F.NAME) LIKE LOWER(CONCAT('%',:name,'%'))")
+    @Query(value="SELECT F.* FROM FOOD F WHERE LOWER(F.NAME) LIKE LOWER(CONCAT('%',:name,'%')) ORDER BY F.NAME",nativeQuery=true,
+    		countQuery="SELECT COUNT(F.ID) FROM FOOD F WHERE LOWER(F.NAME) LIKE LOWER(CONCAT('%',:name,'%'))")
     public Page<Food> foodsNameWithAll(@Param("name") String name , Pageable pageable);
 }

@@ -4,6 +4,7 @@ package com.glycemic.filter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -21,6 +22,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.glycemic.handler.JwtExceptionHandler;
 import com.glycemic.jwt.JwtUtils;
+import com.glycemic.model.JwtSession;
+import com.glycemic.repository.JwtSessionRepository;
 import com.glycemic.security.UserDetailsServiceImpl;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -38,6 +41,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 	
 	@Autowired
 	private JwtExceptionHandler jwtException;
+	
+	@Autowired
+	private JwtSessionRepository jwtRepo;
 	
 	private List<String> AUTH_URLS;
 	
@@ -65,13 +71,17 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 			if (jwt != null && !jwt.isEmpty()) {
 				jwtUtils.validateToken(jwt);
 				String email = jwtUtils.getEmailFromJwtToken(jwt);
+				Long id = jwtUtils.getIdFromJwtToken(jwt);
+				Optional<JwtSession> session = jwtRepo.findByJwttoken(jwt);
 				
-				UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-						userDetails, null, userDetails.getAuthorities());
-				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+				if(session.isPresent() && (session.get().getUsers().getId() == id  && session.get().getUsers().getEmail().equals(email))) {
+					UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+					UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+							userDetails, null, userDetails.getAuthorities());
+					authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-				SecurityContextHolder.getContext().setAuthentication(authentication);
+					SecurityContextHolder.getContext().setAuthentication(authentication);
+				}
 			}
 		} catch (SignatureException | MalformedJwtException | UnsupportedJwtException | ExpiredJwtException e) {
 			jwtException.jwtException(request, response, e);

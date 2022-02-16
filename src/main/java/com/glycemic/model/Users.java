@@ -58,8 +58,8 @@ public class Users extends BaseModel implements Serializable{
 	private Boolean enable;
 	
 	@ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-	@NotNull(message = "Ülke kısmı boş bırakılamaz.", groups = UserValidator.class)
-	private Country country;
+	@NotNull(message = "Şehir kısmı boş bırakılamaz.", groups = UserValidator.class)
+	private City city;
 
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(	name = "user_roles", 
@@ -68,7 +68,7 @@ public class Users extends BaseModel implements Serializable{
 	private List<Roles> roles;
 	
 	public Users(Long id, String email, String password, String name, String surname, 
-			String fullname, Boolean enable, Country country) {
+			String fullname, Boolean enable, City city) {
 		this.id = id;
 		this.email = email;
 		this.password = password;
@@ -76,7 +76,7 @@ public class Users extends BaseModel implements Serializable{
 		this.surname = surname;
 		this.fullname = fullname;
 		this.enable = enable;
-		this.country = country;
+		this.city = city;
 	}
 	
 	public Users(String email, String password, String name, String surname, 

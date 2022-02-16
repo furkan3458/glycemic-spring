@@ -21,16 +21,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.glycemic.jwt.JwtUtils;
-import com.glycemic.model.Country;
+import com.glycemic.model.City;
 import com.glycemic.model.JwtSession;
 import com.glycemic.model.Roles;
 import com.glycemic.model.Users;
-import com.glycemic.repository.CountryRepository;
+import com.glycemic.repository.CityRepository;
 import com.glycemic.repository.JwtSessionRepository;
 import com.glycemic.repository.RoleRepository;
 import com.glycemic.repository.UserRepository;
 import com.glycemic.request.LoginRequest;
+import com.glycemic.request.ValidateRequest;
 import com.glycemic.response.LoginResponse;
+import com.glycemic.response.ValidateResponse;
 import com.glycemic.security.UserDetailsImpl;
 import com.glycemic.util.EResultInfo;
 import com.glycemic.util.ERole;
@@ -52,7 +54,7 @@ public class AuthController {
 	private RoleRepository roleRepo;
 	
 	@Autowired
-	private CountryRepository countryRepo;
+	private CityRepository countryRepo;
 	
 	@Autowired
 	private AuthenticationManager authenticationManager;
@@ -83,7 +85,7 @@ public class AuthController {
 				userDetails.getSurname(),
 				userDetails.getFullname(),
 				userDetails.getEnable(),
-				userDetails.getCountry());
+				userDetails.getCity());
 		Optional <JwtSession> jwtSessionOptional = jwtRepo.findByUsers(user);
 		
 		if(jwtSessionOptional.isEmpty()) 
@@ -152,13 +154,15 @@ public class AuthController {
 			Roles userRole = roleRepo.findByName(ERole.ROLE_USER)
 					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 			
-			Country country = countryRepo.findById(signup.getCountry().getId()).orElseThrow(() -> new RuntimeException("Error: Country is not found."));
+			City country = countryRepo.findById(signup.getCity().getId()).orElseThrow(() -> new RuntimeException("Error: City is not found."));
 			
 			roles.add(userRole);
 			user.setEnable(false);
 			user.setRoles(roles);
-			user.setCountry(country);
+			user.setCity(country);
 			user.setFullname(user.getName()+" "+user.getSurname());
+			user.setCreatedBy(user.getEmail());
+			user.setModifiedBy(user.getEmail());
 			user = userRepo.save(user);
 			
 			Authentication authentication = authenticationManager.authenticate(
@@ -198,5 +202,51 @@ public class AuthController {
 		}
 
 		return ResponseEntity.ok(result);
+	}
+	
+	@PostMapping(path="/validate", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> validateUser(@RequestBody ValidateRequest validateRequest) {
+		
+		Optional<JwtSession> jwtSessionOptional;
+		
+		if(validateRequest.getToken().isEmpty() || validateRequest.getToken() == null || validateRequest.getToken().isBlank() ||
+			validateRequest.getEmail().isEmpty() || validateRequest.getEmail() == null || validateRequest.getEmail().isBlank()) {
+			return ResponseEntity.ok(new ValidateResponse(false, 1, "Cannot acceptable."));
+		}
+		else if(!jwtUtils.getValidateToken(validateRequest.getToken()) || !jwtUtils.getEmailFromJwtToken(validateRequest.getToken()).equals(validateRequest.getEmail())) {
+			return ResponseEntity.ok(new ValidateResponse(false, 2, "Cannot acceptable."));
+		}
+		else if((jwtSessionOptional = jwtRepo.findByJwttoken(validateRequest.getToken())).isEmpty() || !jwtSessionOptional.get().getUsers().getEmail().equals(validateRequest.getEmail())) {
+			return ResponseEntity.ok(new ValidateResponse(false, 3, "Cannot acceptable."));
+		}
+			
+		return ResponseEntity.ok(new ValidateResponse(true, 0, "Success."));
+	}
+	
+	@PostMapping(path="/validate_email", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> validateEmail(@RequestBody ValidateRequest validateRequest) {
+		
+		Optional<Users> user = userRepo.findByEmail(validateRequest.getEmail());
+		
+		if(user.isPresent()) {
+			return ResponseEntity.ok(new ValidateResponse(false, 0, "User found with that email."));
+		}
+		
+		return ResponseEntity.ok(new ValidateResponse(true, 0, "Success."));
+	}
+	
+	@PostMapping(path="/logout", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> logout(@RequestBody ValidateRequest validateRequest) {
+		
+		Optional<JwtSession> session = jwtRepo.findByJwttoken(validateRequest.getToken());
+		
+		if(session.isEmpty()) {
+			
+			return ResponseEntity.ok(new ValidateResponse(false, 0, "Token not found. Session is invalid but logout can applicable."));
+		}
+		
+		jwtRepo.delete(session.get());
+		
+		return ResponseEntity.ok(new ValidateResponse(true, 0, "Success."));
 	}
 }

@@ -2,6 +2,7 @@ package com.glycemic.model;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -10,6 +11,8 @@ import javax.persistence.Table;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.glycemic.serializer.CitySerializer;
 import com.glycemic.validator.CountryIdValidator;
 
 import lombok.AllArgsConstructor;
@@ -23,7 +26,8 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
 @NoArgsConstructor
-public class Country extends BaseModel implements Serializable{
+@JsonSerialize(using = CitySerializer.class)
+public class City extends BaseModel implements Serializable{
 
 	private static final long serialVersionUID = 7727106370962024058L;
 	
@@ -33,5 +37,9 @@ public class Country extends BaseModel implements Serializable{
 	private Long id;
 	
 	@NotNull(message="İsim kısmı boş bırakılamaz.")
+	@Column(unique = true)
 	private String name;
+	
+	@NotNull(message="Değer kısmı boş bırakılamaz.")
+	private String value;
 }

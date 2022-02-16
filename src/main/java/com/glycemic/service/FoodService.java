@@ -92,6 +92,7 @@ public class FoodService {
 		
         
         if (oFoods.isEmpty()) {
+        	foods.setId(0L);
         	foods.setEnabled(false);
             foods.setUrl(Generator.generateUrl(foods.getName()));
             foods.setFoodStatus(EFoodStatus.WAITING);
@@ -176,10 +177,13 @@ public class FoodService {
 		result.put(EResultInfo.result, new int[0]);
 		
 		if(food.isPresent()) {	
+			List<FoodNutritional> food_nutritionals = fNutrRepo.findAllByFood(food.get());
+			Food cloneFood = food.get().copy();
+			cloneFood.setFoodNutritional(food_nutritionals);
 			result.put(EResultInfo.status, true);
 			result.put(EResultInfo.errors, 0);
 			result.put(EResultInfo.message, "Ürün doğrulandı.");
-			result.put(EResultInfo.result, true);
+			result.put(EResultInfo.result, Arrays.asList(cloneFood));
 		}
 		
 		return result;

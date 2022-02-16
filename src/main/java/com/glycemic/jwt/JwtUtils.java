@@ -30,6 +30,7 @@ public class JwtUtils {
 		UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 		JwtBuilder jwtBuilder = Jwts.builder()
 				.setSubject((userPrincipal.getEmail()))
+				.setAudience(""+userPrincipal.getId())
 				.setIssuedAt(new Date())
 				.signWith(SignatureAlgorithm.HS512, jwtSecret);
 		
@@ -46,8 +47,24 @@ public class JwtUtils {
 	public Long getExpireTimeFromJwtToken(String token) {
 		return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getExpiration().getTime();
 	}
+	
+	public Long getIdFromJwtToken(String token) {
+		return Long.parseLong(Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getAudience());
+	}
 
 	public void validateToken(String authToken) throws JwtException{
 		Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+	}
+	
+	public boolean getValidateToken(String authToken){
+		try {
+			Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+			return true;
+		}
+		catch(JwtException e) {
+			logger.info("Invalid token : "+authToken);
+		}
+		
+		return false;
 	}
 }

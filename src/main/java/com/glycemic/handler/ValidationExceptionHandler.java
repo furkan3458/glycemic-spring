@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import javax.validation.ConstraintViolationException;
 
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -28,6 +29,14 @@ public class ValidationExceptionHandler {
 	public ResponseEntity<Error> sqlIntegrityConstraintViolationHandler(SQLIntegrityConstraintViolationException exception){
 		String errorMessage = "Check your values. You entered duplicated value on unique column.";
 		Error error = new Error(HttpStatus.BAD_REQUEST, ErrorHandleType.DATA_INTEGRITY_CONSTRAINT_VIOLATION , errorMessage, exception.getLocalizedMessage() ,LocalDateTime.now().toLocalDate().toString(), LocalDateTime.now().toLocalTime().toString());
+		
+		return ResponseEntity.badRequest().body(error);
+	}
+	
+	@ExceptionHandler(value= {InvalidDataAccessApiUsageException.class})
+	public ResponseEntity<Error> sqlIntegrityConstraintViolationHandler(InvalidDataAccessApiUsageException exception){
+		String errorMessage = "You entered wrong nested values.";
+		Error error = new Error(HttpStatus.BAD_REQUEST, ErrorHandleType.INVALID_DATA_ACCESS_API_USAGE , errorMessage, "Check your object key and values.", LocalDateTime.now().toLocalDate().toString(), LocalDateTime.now().toLocalTime().toString());
 		
 		return ResponseEntity.badRequest().body(error);
 	}

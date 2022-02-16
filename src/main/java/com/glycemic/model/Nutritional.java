@@ -38,5 +38,8 @@ public class Nutritional extends BaseModel implements Serializable {
 	
 	@NotNull(message="İsim kısmı boş bırakılamaz", groups=NutritionalValidator.class)
 	private String name;
+	
+	@NotNull(message="Birim kısmı boş bırakılamaz", groups=NutritionalValidator.class)
+	private String unit;
 
 }

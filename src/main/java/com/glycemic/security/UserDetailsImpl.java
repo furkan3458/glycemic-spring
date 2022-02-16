@@ -10,7 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.glycemic.model.Country;
+import com.glycemic.model.City;
 import com.glycemic.model.Users;
 
 public class UserDetailsImpl implements UserDetails {
@@ -26,7 +26,7 @@ public class UserDetailsImpl implements UserDetails {
 
 	private String email;
 	
-	private Country country;
+	private City city;
 	
 	private Boolean enable;
 	
@@ -44,7 +44,7 @@ public class UserDetailsImpl implements UserDetails {
 	private Collection<? extends GrantedAuthority> authorities;
 
 	public UserDetailsImpl(Long id, String email, String password, String name, String surname, String fullname, 
-			Boolean enable, Country country, String createdBy, Long createdDate, String modifiedBy, Long modifiedDate,
+			Boolean enable, City city, String createdBy, Long createdDate, String modifiedBy, Long modifiedDate,
 			Collection<? extends GrantedAuthority> authorities) {
 		this.id = id;
 		this.email = email;
@@ -52,7 +52,7 @@ public class UserDetailsImpl implements UserDetails {
 		this.name = name;
 		this.surname = surname;
 		this.password = password;
-		this.country = country;
+		this.city = city;
 		this.enable = enable;
 		this.createdBy = createdBy;
 		this.createdDate = createdDate;
@@ -74,7 +74,7 @@ public class UserDetailsImpl implements UserDetails {
 				user.getSurname(),
 				user.getFullname(),
 				user.getEnable(),
-				user.getCountry(),
+				user.getCity(),
 				user.getCreatedBy(),
 				user.getCreatedDate(),
 				user.getModifiedBy(),
@@ -117,8 +117,8 @@ public class UserDetailsImpl implements UserDetails {
 		return surname;
 	}
 	
-	public Country getCountry() {
-		return country;
+	public City getCity() {
+		return city;
 	}
 	
 	public Boolean getEnable() {
