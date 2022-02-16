@@ -43,7 +43,7 @@ public class FoodService {
 		result.put(EResultInfo.result, new int[0]);
     	
 		Pageable pageable = PageRequest.of(0, 3);
-    	Page<Food> foods = foodRepo.findAllPageable(pageable);
+    	Page<Food> foods = foodRepo.findAllPageable(EFoodStatus.ACCEPT.ordinal(),pageable);
     	
     	if(!foods.isEmpty()) {
     		result.put(EResultInfo.status, true);
@@ -69,12 +69,16 @@ public class FoodService {
 		result.put(EResultInfo.result, new int[0]);
         
         if (oUserName.isPresent()) {
-            List<Food> foodList = foodRepo.findByCreatedByEqualsIgnoreCase(oUserName.get());
+        	Pageable pageable = PageRequest.of(0, 3);
+            Page<Food> foods = foodRepo.findByCreatedByWithPage(oUserName.get(),pageable);
             
             result.put(EResultInfo.status, true);
     		result.put(EResultInfo.errors, 0);
     		result.put(EResultInfo.message, "Sonuç(lar) bulundu.");
-    		result.put(EResultInfo.result, foodList);
+    		result.put(EResultInfo.result, foods.get());
+    		result.put(EPageInfo.page, 1);
+    		result.put(EPageInfo.total, foods.getTotalElements());
+    		result.put(EPageInfo.totalPage, foods.getTotalPages());
         }
 
         return result;
@@ -189,12 +193,17 @@ public class FoodService {
 		return result;
 	}
 	
-	public LinkedHashMap<ResultTemplate,Object> getByName(String name) {
+	public LinkedHashMap<ResultTemplate,Object> getByName(String name, String status) {
 		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
 		
 		String url = Generator.generateUrl(name);
 		
-		Optional<Food> food = foodRepo.findByUrlIgnoreCase(url);
+		Optional<Food> food = null;
+		
+		if(status.equals("all"))
+			food = foodRepo.findByUrlIgnoreCase(url);
+		else
+			food = foodRepo.findByUrlIgnoreCaseAndFoodStatus(url, EFoodStatus.ACCEPT);
 		
 		result.put(EResultInfo.status, false);
 		result.put(EResultInfo.errors, 1);

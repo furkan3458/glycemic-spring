@@ -15,6 +15,7 @@ import com.glycemic.model.Category;
 import com.glycemic.model.Food;
 import com.glycemic.repository.CategoryRepository;
 import com.glycemic.repository.FoodRepository;
+import com.glycemic.util.EFoodStatus;
 import com.glycemic.util.EPageInfo;
 import com.glycemic.util.EResultInfo;
 import com.glycemic.util.Generator;
@@ -87,7 +88,7 @@ public class CategoryService {
 		
 		if(category.isPresent()) {
 			Pageable pageable = PageRequest.of(0, 3);
-			Page<Food> foods = foodRepo.findByCategoryIdPage(category.get().getId(),pageable);
+			Page<Food> foods = foodRepo.findByCategoryIdPage(category.get().getId(),EFoodStatus.ACCEPT.ordinal(), pageable);
 			category.get().setFoods(foods.getContent());
 			
 			result.put(EResultInfo.status, true);
@@ -114,7 +115,7 @@ public class CategoryService {
 		
 		if(category.isPresent()) {
 			Pageable pageable = PageRequest.of(0, 3);
-			Page<Food> foods = foodRepo.findByCategoryIdPage(category.get().getId(),pageable);
+			Page<Food> foods = foodRepo.findByCategoryIdPage(category.get().getId(),EFoodStatus.ACCEPT.ordinal(),pageable);
 			category.get().setFoods(foods.getContent());
 			
 			result.put(EResultInfo.status, true);

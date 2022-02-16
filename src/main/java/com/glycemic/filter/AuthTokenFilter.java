@@ -47,6 +47,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 	
 	private List<String> AUTH_URLS;
 	
+	private static final String[] REGEX_URLS = {
+			"\\/food\\/get\\?name=[\\s\\S]\\w{1,}\\w[&]{1}status=[\\s\\S]\\w{1,}"
+	};
+	
 	public AuthTokenFilter(String... AUTH_URLS) {
 		this.AUTH_URLS = Arrays.asList(AUTH_URLS);
 	}
@@ -54,9 +58,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
 		String path = request.getServletPath();
+		String fullpath = path+"?"+request.getQueryString();
 		boolean upper = false;
 		for(String s : AUTH_URLS) {
 			if(s.contains(path) || s.equals("/**") || s.equals(path))
+				upper = true;
+		}
+		
+		for(String s : REGEX_URLS) {
+			if(fullpath.matches(s))
 				upper = true;
 		}
 		

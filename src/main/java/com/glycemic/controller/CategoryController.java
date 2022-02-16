@@ -55,21 +55,21 @@ public class CategoryController {
 		return ResponseEntity.ok(categoryService.getCategoryById(id));
 	}
 	
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('ADMIN') OR hasRole('SUPER_ADMIN')")
 	@PutMapping(path="/insert", produces=MediaType.APPLICATION_JSON_VALUE, consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> insertCategory(@RequestBody @Validated(value = CategoryValidator.class) Category category){
 		
 		return ResponseEntity.ok(categoryService.insert(category));
 	}
 	
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('ADMIN') OR hasRole('SUPER_ADMIN')")
 	@PostMapping(path="/update", produces=MediaType.APPLICATION_JSON_VALUE, consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> updateCategory(@RequestBody @Validated(value = CategoryAllValidator.class) Category category){
 		
 		return ResponseEntity.ok(categoryService.update(category));
 	}
 	
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('ADMIN') OR hasRole('SUPER_ADMIN')")
 	@DeleteMapping(path="/delete", params={"id"}, produces=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> deleteCategory(@RequestParam("id") Long id){
 		

@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.glycemic.serializer.CategorySerializer;
 import com.glycemic.validator.CategoryIdValidator;
 import com.glycemic.validator.CategoryValidator;
-import com.glycemic.validator.FoodValidator;
 import com.glycemic.view.NutritionalView;
 
 import lombok.AllArgsConstructor;

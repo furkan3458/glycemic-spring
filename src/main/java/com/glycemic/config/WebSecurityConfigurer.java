@@ -41,6 +41,7 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter{
 		    "/food/delete",
 		    "/food/update",
 		    "/food/list/user",
+		    "/search/search/user",
 		    "/category/insert",
 		    "/category/update",
 		    "/category/delete",
@@ -77,6 +78,7 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter{
 		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 		http.exceptionHandling().authenticationEntryPoint(authenticationEntryPointImpl);
 		http.authorizeHttpRequests().antMatchers(AUTH_URLS).authenticated().anyRequest().permitAll();
+		http.authorizeRequests().regexMatchers("\\/food\\/get\\?name=[\\s\\S]\\w{1,}\\w[&]{1}status=[\\s\\S]\\w{1,}").hasAnyRole("USER","ADMIN");
 		http.addFilterBefore(authenticationJwtTokenFilter(),UsernamePasswordAuthenticationFilter.class);
 
 		http.cors();

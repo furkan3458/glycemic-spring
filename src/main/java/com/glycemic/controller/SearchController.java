@@ -27,4 +27,10 @@ public class SearchController {
 		
 		return ResponseEntity.ok(searchService.searchWith(q,category,page));
 	}
+	
+	@GetMapping(path="/search/user", params={"q","category","page"}, produces=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> searchFoodParameterForUser(@RequestParam String q, @RequestParam String category, @RequestParam int page){
+		
+		return ResponseEntity.ok(searchService.searchWithUser(q,category,page));
+	}
 }

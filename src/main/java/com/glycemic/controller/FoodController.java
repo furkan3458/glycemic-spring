@@ -43,7 +43,7 @@ public class FoodController {
     	return ResponseEntity.ok(foodService.userFoodList());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') OR hasRole('SUPER_ADMIN')")
     @DeleteMapping(path="/delete", params= {"id"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> foodDelete(@RequestParam("id") Long id) {
     	return ResponseEntity.ok(foodService.delete(id));
@@ -67,6 +67,13 @@ public class FoodController {
     @JsonView(NutritionalView.ExceptFood.class)
     @GetMapping(path="/get", params= {"name"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> foodGetByName(@RequestParam("name") String name) {
-    	return ResponseEntity.ok(foodService.getByName(name));
+    	return ResponseEntity.ok(foodService.getByName(name, "reject"));
+    }
+    
+    @PreAuthorize("hasRole('USER') OR hasRole('ADMIN') OR hasRole('SUPER_ADMIN')")
+    @JsonView(NutritionalView.ExceptFood.class)
+    @GetMapping(path="/get", params= {"name","status"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> foodGetByNameAndStatus(@RequestParam("name") String name, @RequestParam("status") String status) {
+    	return ResponseEntity.ok(foodService.getByName(name, status));
     }
 }
