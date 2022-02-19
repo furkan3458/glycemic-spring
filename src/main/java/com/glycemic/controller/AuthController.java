@@ -22,6 +22,7 @@ import com.glycemic.model.JwtSession;
 import com.glycemic.model.Users;
 import com.glycemic.repository.JwtSessionRepository;
 import com.glycemic.repository.UserRepository;
+import com.glycemic.request.ActivationRequest;
 import com.glycemic.request.LoginRequest;
 import com.glycemic.request.ValidateRequest;
 import com.glycemic.response.ValidateResponse;
@@ -71,6 +72,14 @@ public class AuthController {
 		
 		HttpStatus status = (HttpStatus)body.get(EResultInfo.errors);
 		
+		return new ResponseEntity<>(body,status);
+	}
+	
+	@PostMapping(path="/activate", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> activateUser(@RequestBody ActivationRequest activationRequest) {
+		LinkedHashMap<ResultTemplate,Object> body = authService.activate(activationRequest);
+		
+		HttpStatus status = (HttpStatus)body.get(EResultInfo.errors);
 		return new ResponseEntity<>(body,status);
 	}
 	

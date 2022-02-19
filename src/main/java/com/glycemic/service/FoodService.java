@@ -8,6 +8,7 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +42,9 @@ public class FoodService {
 	@Autowired
 	private AuditAwareConfigurer auditAwareConfig;
 	
+	@Value("${app.pageElementSize}")
+	private Integer pageSize;
+	
 	public LinkedHashMap<ResultTemplate,Object> foodList() {
     	LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
     	
@@ -49,7 +53,7 @@ public class FoodService {
 		result.put(EResultInfo.message, "Sonuç bulunamadı.");
 		result.put(EResultInfo.result, new int[0]);
     	
-		Pageable pageable = PageRequest.of(0, 3);
+		Pageable pageable = PageRequest.of(0, pageSize);
     	Page<Food> foods = foodRepo.findAllPageable(EFoodStatus.ACCEPT.ordinal(),pageable);
     	
     	if(!foods.isEmpty()) {
@@ -76,7 +80,7 @@ public class FoodService {
 		result.put(EResultInfo.result, new int[0]);
         
         if (oUserName.isPresent()) {
-        	Pageable pageable = PageRequest.of(0, 3);
+        	Pageable pageable = PageRequest.of(0, pageSize);
             Page<Food> foods = foodRepo.findByCreatedByWithPage(oUserName.get(),pageable);
             
             result.put(EResultInfo.status, true);

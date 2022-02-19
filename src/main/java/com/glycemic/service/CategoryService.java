@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,9 @@ public class CategoryService {
 	
 	@Autowired
 	private FoodRepository foodRepo;
+	
+	@Value("${app.pageElementSize}")
+	private Integer pageSize;
 	
 	public LinkedHashMap<ResultTemplate,Object> categoryList(){
 		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
@@ -87,7 +91,7 @@ public class CategoryService {
 		result.put(EResultInfo.result, new int[0]);
 		
 		if(category.isPresent()) {
-			Pageable pageable = PageRequest.of(0, 3);
+			Pageable pageable = PageRequest.of(0, pageSize);
 			Page<Food> foods = foodRepo.findByCategoryIdPage(category.get().getId(),EFoodStatus.ACCEPT.ordinal(), pageable);
 			category.get().setFoods(foods.getContent());
 			
@@ -114,7 +118,7 @@ public class CategoryService {
 		result.put(EResultInfo.result, new int[0]);
 		
 		if(category.isPresent()) {
-			Pageable pageable = PageRequest.of(0, 3);
+			Pageable pageable = PageRequest.of(0, pageSize);
 			Page<Food> foods = foodRepo.findByCategoryIdPage(category.get().getId(),EFoodStatus.ACCEPT.ordinal(),pageable);
 			category.get().setFoods(foods.getContent());
 			

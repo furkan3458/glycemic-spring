@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,9 @@ public class SearchService {
 	@Autowired
 	private AuditAwareConfigurer auditAwareConfig;
 	
+	@Value("${app.pageElementSize}")
+	private Integer pageSize;
+	
 	public LinkedHashMap<ResultTemplate,Object> searchWith(String q, String category, int page){
 		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
 		
@@ -39,10 +43,10 @@ public class SearchService {
 		page = page <= 0 ? 1 : page;
 		
 		if(category.equals("all")) {
-			Pageable pageable = PageRequest.of(page-1, 3);
+			Pageable pageable = PageRequest.of(page-1, pageSize);
 	    	foods = foodRepo.foodsNameWithAll(q,EFoodStatus.ACCEPT.ordinal(),pageable);
 		}else {
-			Pageable pageable = PageRequest.of(page-1, 3);
+			Pageable pageable = PageRequest.of(page-1, pageSize);
 			foods = foodRepo.foodsNameWithCategoryJoinAndLimited(q,category,EFoodStatus.ACCEPT.ordinal(),pageable);
 		}
 		
@@ -74,10 +78,10 @@ public class SearchService {
 		page = page <= 0 ? 1 : page;
 		
 		if(category.equals("all")) {
-			Pageable pageable = PageRequest.of(page-1, 3);
+			Pageable pageable = PageRequest.of(page-1, pageSize);
 	    	foods = foodRepo.foodsNameWithAllForUser(q, oUserName.get(), pageable);
 		}else {
-			Pageable pageable = PageRequest.of(page-1, 3);
+			Pageable pageable = PageRequest.of(page-1, pageSize);
 			foods = foodRepo.foodsNameWithCategoryJoinAndLimitedForUser(q,category,oUserName.get(),pageable);
 		}
 		
