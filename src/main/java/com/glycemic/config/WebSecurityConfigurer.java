@@ -48,6 +48,7 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter{
 		    "/nutritional/insert",
 		    "/nutritional/update",
 		    "/nutritional/delete",
+		    "/mail/test",
 	};
 	
 	@Bean
