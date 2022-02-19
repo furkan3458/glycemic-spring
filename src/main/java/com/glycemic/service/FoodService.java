@@ -5,6 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,8 +16,10 @@ import org.springframework.stereotype.Service;
 import com.glycemic.config.AuditAwareConfigurer;
 import com.glycemic.model.Food;
 import com.glycemic.model.FoodNutritional;
+import com.glycemic.model.Nutritional;
 import com.glycemic.repository.FoodNutritionalRepository;
 import com.glycemic.repository.FoodRepository;
+import com.glycemic.repository.NutritionalRepository;
 import com.glycemic.util.EFoodStatus;
 import com.glycemic.util.EPageInfo;
 import com.glycemic.util.EResultInfo;
@@ -30,6 +34,9 @@ public class FoodService {
 	
 	@Autowired
 	private FoodNutritionalRepository fNutrRepo;
+
+	@Autowired
+	private NutritionalRepository nutriRepo;
 	
 	@Autowired
 	private AuditAwareConfigurer auditAwareConfig;
@@ -84,6 +91,7 @@ public class FoodService {
         return result;
     }
 	
+	@Transactional
 	public LinkedHashMap<ResultTemplate,Object> insert(Food foods) {
 		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
 		
@@ -101,6 +109,22 @@ public class FoodService {
             foods.setUrl(Generator.generateUrl(foods.getName()));
             foods.setFoodStatus(EFoodStatus.WAITING);
             Food food = foodRepo.save(foods);
+            
+            
+            if(!foods.getFoodNutritional().isEmpty()) {
+            	for(FoodNutritional fn : foods.getFoodNutritional()) {
+            		Optional<Nutritional> nutritional;
+            		
+            		if(fn.getNutritional().getId() != null && fn.getRate() != null && fn.getPercent() != null && (nutritional = nutriRepo.findById(fn.getNutritional().getId())).isPresent()) {
+            			FoodNutritional fnNew = new FoodNutritional();
+            			fnNew.setFood(food);
+            			fnNew.setNutritional(nutritional.get());
+            			fnNew.setRate(fn.getRate());
+            			fnNew.setPercent(fn.getPercent());
+            			fNutrRepo.save(fnNew);
+            		}
+            	}
+            }
             
             result.put(EResultInfo.status, true);
     		result.put(EResultInfo.errors, 0);

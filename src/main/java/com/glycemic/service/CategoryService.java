@@ -202,7 +202,6 @@ public class CategoryService {
 			String url = Generator.generateUrl(category.getName());
 			
 			category.setUrl(url);
-			category.setCreatedBy(url);
 			category.setCreatedBy(searched.get().getCreatedBy());
 			category.setCreatedDate(searched.get().getCreatedDate());
 			

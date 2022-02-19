@@ -41,7 +41,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
 			HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatus status, WebRequest request){
 		
-		Error error = new Error(HttpStatus.METHOD_NOT_ALLOWED, ErrorHandleType.METHOD_NOT_SUPPORTED, "Use GET,POST,DELETE,PUT methods.", ex.getLocalizedMessage() ,LocalDateTime.now().toLocalDate().toString(), LocalDateTime.now().toLocalTime().toString());
+		Error error = new Error(HttpStatus.METHOD_NOT_ALLOWED, ErrorHandleType.METHOD_NOT_SUPPORTED, "The method used is not valid for this request.", "Use one of the GET, POST, DELETE, PUT methods." ,LocalDateTime.now().toLocalDate().toString(), LocalDateTime.now().toLocalTime().toString());
 		
 		return new ResponseEntity<>(error, HttpStatus.METHOD_NOT_ALLOWED);
 	}
@@ -50,9 +50,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	protected ResponseEntity<Object> handleHttpMessageNotReadable(
 			HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request){
 		
-		Error error = new Error(HttpStatus.BAD_REQUEST, ErrorHandleType.MESSAGE_NOT_READABLE, "Change your parameters.", ex.getLocalizedMessage() ,LocalDateTime.now().toLocalDate().toString(), LocalDateTime.now().toLocalTime().toString());
+		Error error = new Error(HttpStatus.BAD_REQUEST, ErrorHandleType.MESSAGE_NOT_READABLE, "Your data is incorrect.", "Check your parameter(s),value(s) or syntax." ,LocalDateTime.now().toLocalDate().toString(), LocalDateTime.now().toLocalTime().toString());
 		
 		return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
 	}
-
 }

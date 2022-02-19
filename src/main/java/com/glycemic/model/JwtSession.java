@@ -36,10 +36,19 @@ public class JwtSession implements Serializable{
 	
 	private Long expiretime;
 	
-	public JwtSession(Users users, String jwttoken, Long expiretime) {
+	private String remoteAddr;
+	
+	private String userAgent;
+	
+	private String fingerPrint;
+	
+	public JwtSession(Users users, String jwttoken, Long expiretime, String remoteAddr, String userAgent, String fingerPrint) {
 		this.users = users;
 		this.jwttoken = jwttoken;
 		this.expiretime = expiretime;
+		this.remoteAddr = remoteAddr;
+		this.userAgent = userAgent;
+		this.fingerPrint = fingerPrint;
 	}
 	
 	@Override

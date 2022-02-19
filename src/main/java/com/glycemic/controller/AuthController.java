@@ -1,18 +1,15 @@
 package com.glycemic.controller;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Optional;
 
+import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,21 +18,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.glycemic.jwt.JwtUtils;
-import com.glycemic.model.City;
 import com.glycemic.model.JwtSession;
-import com.glycemic.model.Roles;
 import com.glycemic.model.Users;
-import com.glycemic.repository.CityRepository;
 import com.glycemic.repository.JwtSessionRepository;
-import com.glycemic.repository.RoleRepository;
 import com.glycemic.repository.UserRepository;
 import com.glycemic.request.LoginRequest;
 import com.glycemic.request.ValidateRequest;
-import com.glycemic.response.LoginResponse;
 import com.glycemic.response.ValidateResponse;
-import com.glycemic.security.UserDetailsImpl;
+import com.glycemic.service.AuthService;
 import com.glycemic.util.EResultInfo;
-import com.glycemic.util.ERole;
 import com.glycemic.util.ResultTemplate;
 import com.glycemic.validator.UserValidator;
 
@@ -45,163 +36,42 @@ import com.glycemic.validator.UserValidator;
 public class AuthController {
 	
 	@Autowired
+	private AuthService	authService;
+	
+	@Autowired
 	private UserRepository userRepo;
 	
 	@Autowired
 	private JwtSessionRepository jwtRepo;
-	
-	@Autowired
-	private RoleRepository roleRepo;
-	
-	@Autowired
-	private CityRepository countryRepo;
-	
-	@Autowired
-	private AuthenticationManager authenticationManager;
-	
-	@Autowired
-	PasswordEncoder encoder;
-	
+
 	@Autowired
 	JwtUtils jwtUtils;
 	
 	@PostMapping(path="/login", produces=MediaType.APPLICATION_JSON_VALUE, consumes=MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> login(@RequestBody LoginRequest loginRequest){
-		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
+	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request){
 		
-		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		String jwt = jwtUtils.generateJwtToken(authentication,loginRequest.getRememberMe());
+		String userAgent = request.getHeader("User-Agent");
+		String fingerPrint = request.getHeader("Fingerprint");
+		String remoteAddr = request.getRemoteAddr();
 		
-		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-		JwtSession jwtSession = new JwtSession();
+		LinkedHashMap<ResultTemplate,Object> body = authService.login(loginRequest, userAgent, remoteAddr, fingerPrint);
 		
-		Users user = new Users(userDetails.getId(), 
-				userDetails.getEmail(),
-				userDetails.getPassword(),
-				userDetails.getName(),
-				userDetails.getSurname(),
-				userDetails.getFullname(),
-				userDetails.getEnable(),
-				userDetails.getCity());
-		Optional <JwtSession> jwtSessionOptional = jwtRepo.findByUsers(user);
+		HttpStatus status = (HttpStatus)body.get(EResultInfo.errors);
 		
-		if(jwtSessionOptional.isEmpty()) 
-			jwtSession.setUsers(user);
-		else 
-			jwtSession = jwtSessionOptional.get();
-		
-		jwtSession.setJwttoken(jwt);
-		jwtSession.setExpiretime(loginRequest.getRememberMe() ? null : jwtUtils.getExpireTimeFromJwtToken(jwt));	
-		
-		jwtRepo.save(jwtSession);
-		
-		LoginResponse response = new LoginResponse(
-				userDetails.getId(),
-				jwt,
-				userDetails.getEmail(),
-				userDetails.getFullname(),
-				userDetails.getName(),
-				userDetails.getSurname(),
-				userDetails.getCreatedBy(),
-				userDetails.getModifiedBy(),
-				userDetails.getCreatedDate(),
-				userDetails.getModifiedDate(),
-				userDetails.getEnable()
-				);
-		
-		result.put(EResultInfo.status, true);
-		result.put(EResultInfo.errors, 0);
-		result.put(EResultInfo.message, "Giriş başarılı.");
-		result.put(EResultInfo.result, response);
-			
-		return ResponseEntity.ok(result);
+		return new ResponseEntity<>(body,status);
 	}
 	
 	@PostMapping(path="/signup", produces=MediaType.APPLICATION_JSON_VALUE, consumes=MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> signup(@RequestBody @Validated(value = UserValidator.class) Users signup){
-		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
+	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> signup(@RequestBody @Validated(value = UserValidator.class) Users signup, HttpServletRequest request) throws MessagingException{
+		String userAgent = request.getHeader("User-Agent");
+		String fingerPrint = request.getHeader("Fingerprint");
+		String remoteAddr = request.getRemoteAddr();
 		
-		if(!signup.getEmail().matches("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")) {
-			result.put(EResultInfo.status, false);
-			result.put(EResultInfo.message, "Error: Email is invalid.");
-			result.put(EResultInfo.errors, 1);
-			
-		}
-		else if(!signup.getPassword().matches("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$")) {
-			result.put(EResultInfo.status, false);
-			result.put(EResultInfo.message, "Error: Password must be at least 8 characters long and contain uppercase letters, numbers and special characters.");
-			result.put(EResultInfo.errors, 2);
-		}
-		else if (userRepo.existsByEmail(signup.getEmail())) {
-			result.put(EResultInfo.status, false);
-			result.put(EResultInfo.message, "Error: Email is already in use!");
-			result.put(EResultInfo.errors, 2);
-		}
-		else{
-			// Create new user's account
-			Users user = new Users(
-					signup.getEmail(),
-					encoder.encode(signup.getPassword()),
-					signup.getName(),
-					signup.getSurname(),
-					false
-				);
-
-			List<Roles> roles = new ArrayList<>();
-			Roles userRole = roleRepo.findByName(ERole.ROLE_USER)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-			
-			City country = countryRepo.findById(signup.getCity().getId()).orElseThrow(() -> new RuntimeException("Error: City is not found."));
-			
-			roles.add(userRole);
-			user.setEnable(false);
-			user.setRoles(roles);
-			user.setCity(country);
-			user.setFullname(user.getName()+" "+user.getSurname());
-			user.setCreatedBy(user.getEmail());
-			user.setModifiedBy(user.getEmail());
-			user = userRepo.save(user);
-			
-			Authentication authentication = authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(signup.getEmail(), signup.getPassword()));
-			
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			String jwt = jwtUtils.generateJwtToken(authentication,false);
-
-			jwtRepo.save(new JwtSession(user,jwt,jwtUtils.getExpireTimeFromJwtToken(jwt)));
-			
-//			new JwtResponse(jwt, 
-//					 user.getId(), 
-//					 user.getFullname(),
-//					 user.getUsername(), 
-//					 user.getEmail(), 
-//					 listRoles,
-//					 false)
-			
-			LoginResponse response = new LoginResponse(
-					user.getId(),
-					jwt,
-					user.getEmail(),
-					user.getFullname(),
-					user.getName(),
-					user.getSurname(),
-					user.getCreatedBy(),
-					user.getModifiedBy(),
-					user.getCreatedDate(),
-					user.getModifiedDate(),
-					user.getEnable()
-					);
-			
-			result.put(EResultInfo.status, true);
-			result.put(EResultInfo.errors, 0);
-			result.put(EResultInfo.message, "Kayıt başarılı.");
-			result.put(EResultInfo.result, response);
-		}
-
-		return ResponseEntity.ok(result);
+		LinkedHashMap<ResultTemplate,Object> body = authService.register(signup, userAgent, remoteAddr, fingerPrint);
+		
+		HttpStatus status = (HttpStatus)body.get(EResultInfo.errors);
+		
+		return new ResponseEntity<>(body,status);
 	}
 	
 	@PostMapping(path="/validate", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)

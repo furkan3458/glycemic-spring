@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=false)
 @JsonView(NutritionalView.ExceptFood.class)
-public class Nutritional extends BaseModel implements Serializable {
+public class Nutritional extends BaseModel implements Serializable, Cloneable {
 
 	private static final long serialVersionUID = 1859918222450635883L;
 	
@@ -42,4 +42,11 @@ public class Nutritional extends BaseModel implements Serializable {
 	@NotNull(message="Birim kısmı boş bırakılamaz", groups=NutritionalValidator.class)
 	private String unit;
 
+	public Nutritional copy() {
+		try {
+			return (Nutritional) this.clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
+	}
 }

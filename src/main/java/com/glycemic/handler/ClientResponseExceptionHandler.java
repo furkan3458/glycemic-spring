@@ -21,4 +21,12 @@ public class ClientResponseExceptionHandler {
 		
 		return ResponseEntity.badRequest().body(error);
 	}
+	
+	@ExceptionHandler(value = {NullPointerException.class})
+	public ResponseEntity<Error> nullPointerHandler(NullPointerException exception){
+		String errorMessage = "An error was encountered during the request.";
+		Error error = new Error(HttpStatus.INTERNAL_SERVER_ERROR, ErrorHandleType.SERVER_ERROR, errorMessage, "You may be missing a parameter, incorrect syntax, or misspelled. Check your parameters or data.", LocalDateTime.now().toLocalDate().toString(), LocalDateTime.now().toLocalTime().toString());
+		
+		return ResponseEntity.badRequest().body(error);
+	}
 }
