@@ -7,6 +7,6 @@ import javax.mail.MessagingException;
 public interface EmailService {
 	public void sendSimpleMessage(String to, String subject, String text);
 
-	public void sendSimpleMessageWithTemplate(String to, String subject, Map<String,Object> templateModel) throws MessagingException;
+	public void sendSimpleMessageWithTemplate(String to, String subject, String templateName, Map<String,Object> templateModel) throws MessagingException;
 
 }

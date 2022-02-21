@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 
 import com.glycemic.mail.EmailServiceImpl;
 import com.glycemic.model.UserActivation;
+import com.glycemic.model.UserResetPassword;
 import com.glycemic.model.Users;
 import com.glycemic.repository.UserActivationRepository;
 import com.glycemic.repository.UserRepository;
+import com.glycemic.repository.UserResetPasswordRepository;
 import com.glycemic.util.EResultInfo;
 import com.glycemic.util.Generator;
 import com.glycemic.util.ResultTemplate;
@@ -30,6 +32,9 @@ public class MailService {
 	private UserActivationRepository activationRepo;
 	
 	@Autowired
+	private UserResetPasswordRepository resetPasswordRepo;
+	
+	@Autowired
 	private UserRepository userRepo;
 	
 	@Value("${app.siteUrl}")
@@ -38,6 +43,7 @@ public class MailService {
 	private static final String RECIPIENT_NAME = "recipientName";
 	private static final String SENDER = "senderName";
 	private static final String ACTIVATE_URL = "activateUrl";
+	private static final String FORGET_PASS_URL = "forgetPasswordUrl";
 	
 	@Transactional
 	public String createActivateUrl(String email) {
@@ -66,6 +72,33 @@ public class MailService {
 		return url;
 	}
 	
+	@Transactional
+	public String createForgetPasswordUrl(String email) {
+		String uuid = Generator.generateUUID();
+		String url = "";
+		
+		Optional<UserActivation> activationOpt = resetPasswordRepo.findByUserEmailAndUsed(email, false);
+		
+		if(activationOpt.isPresent()) {
+			activationRepo.delete(activationOpt.get());
+		}
+		
+		Optional<Users> userOpt = userRepo.findByEmail(email);
+		
+		if(userOpt.isPresent()) {
+			UserResetPassword resetPassword = new UserResetPassword();
+			resetPassword.setId(0L);
+			resetPassword.setUser(userOpt.get());
+			resetPassword.setUuid(uuid);
+			resetPassword.setUsed(false);
+			resetPasswordRepo.save(resetPassword);
+			
+			url = siteUrl+"forget_password?forgetKey="+uuid+"&to="+email;
+		}
+		
+		return url;
+	}
+	
 	public LinkedHashMap<ResultTemplate,Object> welcome(String to, String name) throws MessagingException{
 		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
 		LinkedHashMap<String,Object> templateModel = new LinkedHashMap<>();
@@ -81,7 +114,31 @@ public class MailService {
 			templateModel.put(SENDER, "GlycemicApp");
 			templateModel.put(ACTIVATE_URL, activateUrl);
 			
-			emailServiceImpl.sendSimpleMessageWithTemplate(to, "Hoşgeldiniz", templateModel);
+			emailServiceImpl.sendSimpleMessageWithTemplate(to, "Hoşgeldiniz", "mail-welcome.html", templateModel);
+			
+			result.put(EResultInfo.status, true);
+			result.put(EResultInfo.message, "Mesaj Gönderildi.");
+			result.put(EResultInfo.errors, HttpStatus.OK);
+		}
+		
+		return result;
+	}
+	
+	public LinkedHashMap<ResultTemplate,Object> forgetPassword(String to) throws MessagingException{
+		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
+		LinkedHashMap<String,Object> templateModel = new LinkedHashMap<>();
+		
+		result.put(EResultInfo.status, false);
+		result.put(EResultInfo.message, "Error: Some mistakes");
+		result.put(EResultInfo.errors, HttpStatus.BAD_REQUEST);
+		
+		String forgetPasswordUrl = createForgetPasswordUrl(to);
+		
+		if(!forgetPasswordUrl.isBlank() && !forgetPasswordUrl.isEmpty()) {
+			templateModel.put(SENDER, "GlycemicApp");
+			templateModel.put(FORGET_PASS_URL, forgetPasswordUrl);
+			
+			emailServiceImpl.sendSimpleMessageWithTemplate(to, "Şifreni sıfırla","mail-forgetPassword.html", templateModel);
 			
 			result.put(EResultInfo.status, true);
 			result.put(EResultInfo.message, "Mesaj Gönderildi.");

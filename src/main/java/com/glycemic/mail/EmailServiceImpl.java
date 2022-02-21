@@ -30,7 +30,7 @@ public class EmailServiceImpl implements EmailService{
 	@Autowired
     private SpringTemplateEngine thymeleafTemplateEngine;
 	
-    public void sendSimpleMessageWithTemplate(String to, String subject, Map<String,Object> templateModel) throws MessagingException {
+    public void sendSimpleMessageWithTemplate(String to, String subject, String templateName, Map<String,Object> templateModel) throws MessagingException {
     	
     	MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -38,13 +38,12 @@ public class EmailServiceImpl implements EmailService{
         Context thymeleafContext = new Context();
         thymeleafContext.setVariables(templateModel);
         
-        String htmlBody = thymeleafTemplateEngine.process("mail-welcome.html", thymeleafContext);
+        String htmlBody = thymeleafTemplateEngine.process(templateName, thymeleafContext);
 
         helper.setTo(to);
         try {
 			helper.setFrom(from,APP);
 		} catch (UnsupportedEncodingException | MessagingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         helper.setSubject(subject);

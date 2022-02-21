@@ -30,6 +30,7 @@ import com.glycemic.repository.JwtSessionRepository;
 import com.glycemic.repository.RoleRepository;
 import com.glycemic.repository.UserActivationRepository;
 import com.glycemic.repository.UserRepository;
+import com.glycemic.repository.UserResetPasswordRepository;
 import com.glycemic.request.ActivationRequest;
 import com.glycemic.request.LoginRequest;
 import com.glycemic.response.LoginResponse;
@@ -59,6 +60,9 @@ public class AuthService {
 	
 	@Autowired
 	private UserActivationRepository activationRepo;
+	
+	@Autowired
+	private UserResetPasswordRepository resetPasswordRepo;
 	
 	@Autowired
 	private AuthenticationManager authenticationManager;
@@ -314,5 +318,5 @@ public class AuthService {
 		
 		return result;
 	}
-		
+	
 }
