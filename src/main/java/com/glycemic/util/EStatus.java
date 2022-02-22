@@ -1,6 +1,6 @@
 package com.glycemic.util;
 
-public enum EActivationStatus {
+public enum EStatus {
 	NULL,
     OK,
     ALREADY,

@@ -24,6 +24,7 @@ import com.glycemic.model.City;
 import com.glycemic.model.JwtSession;
 import com.glycemic.model.Roles;
 import com.glycemic.model.UserActivation;
+import com.glycemic.model.UserResetPassword;
 import com.glycemic.model.Users;
 import com.glycemic.repository.CityRepository;
 import com.glycemic.repository.JwtSessionRepository;
@@ -35,9 +36,9 @@ import com.glycemic.request.ActivationRequest;
 import com.glycemic.request.LoginRequest;
 import com.glycemic.response.LoginResponse;
 import com.glycemic.security.UserDetailsImpl;
-import com.glycemic.util.EActivationStatus;
 import com.glycemic.util.EResultInfo;
 import com.glycemic.util.ERole;
+import com.glycemic.util.EStatus;
 import com.glycemic.util.ResultTemplate;
 
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +79,9 @@ public class AuthService {
 	
 	@Value("${app.activationExpire}")
 	private Long activationExpireTime;
+	
+	@Value("${app.resetPassExpire}")
+	private Long resetExpireTime;
 	
 	public LinkedHashMap<ResultTemplate,Object> login(LoginRequest loginRequest, String userAgent, String remoteAddr, String fingerPrint){
 		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
@@ -297,23 +301,59 @@ public class AuthService {
 				result.put(EResultInfo.status, false);
 				result.put(EResultInfo.message, "Error: Already activated.");
 				result.put(EResultInfo.errors, HttpStatus.OK);
-				result.put(EResultInfo.result, EActivationStatus.ALREADY.ordinal());
+				result.put(EResultInfo.result, EStatus.ALREADY.ordinal());
 			}
 			else if(activation.getCreatedDate() + activationExpireTime < System.currentTimeMillis()) {
 				result.put(EResultInfo.status, false);
 				result.put(EResultInfo.message, "Error: Activation is expired.");
 				result.put(EResultInfo.errors, HttpStatus.OK);
-				result.put(EResultInfo.result, EActivationStatus.EXPIRED.ordinal());
+				result.put(EResultInfo.result, EStatus.EXPIRED.ordinal());
 			}
 			else {
 				activation.setActivated(true);
 				activationRepo.save(activation);
 				
 				result.put(EResultInfo.status, true);
-				result.put(EResultInfo.message, "Error: Activation success.");
+				result.put(EResultInfo.message, "Activation success.");
 				result.put(EResultInfo.errors, HttpStatus.OK);
-				result.put(EResultInfo.result, EActivationStatus.OK.ordinal());
+				result.put(EResultInfo.result, EStatus.OK.ordinal());
 			}
+		}
+		
+		return result;
+	}
+	
+	public LinkedHashMap<ResultTemplate,Object> resetPasswordForm(String email, String forgetKey){
+		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
+		
+		result.put(EResultInfo.status, false);
+		result.put(EResultInfo.message, "Error: Parameters are invalid.");
+		result.put(EResultInfo.errors, HttpStatus.BAD_REQUEST);
+		
+		Optional<UserResetPassword> resetOpt = resetPasswordRepo.findByUserEmailAndUuid(email, forgetKey);
+		
+		if(resetOpt.isPresent()) {
+			UserResetPassword reset = resetOpt.get();			
+			
+			if(reset.getUsed()) {
+				result.put(EResultInfo.status, false);
+				result.put(EResultInfo.message, "Error: Link already used.");
+				result.put(EResultInfo.errors, HttpStatus.OK);
+				result.put(EResultInfo.errors, EStatus.ALREADY.ordinal());
+			}
+			else if(reset.getCreatedDate() + resetExpireTime < System.currentTimeMillis()) {
+				result.put(EResultInfo.status, false);
+				result.put(EResultInfo.message, "Error: Password reset is expired.");
+				result.put(EResultInfo.errors, HttpStatus.OK);
+				result.put(EResultInfo.result, EStatus.EXPIRED.ordinal());
+			}
+			else {
+				
+				result.put(EResultInfo.status, true);
+				result.put(EResultInfo.message, "Link validated.");
+				result.put(EResultInfo.errors, HttpStatus.OK);
+				result.put(EResultInfo.result, EStatus.OK.ordinal());
+			}	
 		}
 		
 		return result;

@@ -12,9 +12,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.glycemic.jwt.JwtUtils;
@@ -78,6 +80,14 @@ public class AuthController {
 	@PostMapping(path="/activate", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> activateUser(@RequestBody ActivationRequest activationRequest) {
 		LinkedHashMap<ResultTemplate,Object> body = authService.activate(activationRequest);
+		
+		HttpStatus status = (HttpStatus)body.get(EResultInfo.errors);
+		return new ResponseEntity<>(body,status);
+	}
+	
+	@GetMapping(path="/reset_password", params={"forgetKey","email"}, produces=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> resetPasswordForm(@RequestParam("forgetKey") String forgetKey, @RequestParam("email") String email) {
+		LinkedHashMap<ResultTemplate,Object> body = authService.resetPasswordForm(email, forgetKey);
 		
 		HttpStatus status = (HttpStatus)body.get(EResultInfo.errors);
 		return new ResponseEntity<>(body,status);
