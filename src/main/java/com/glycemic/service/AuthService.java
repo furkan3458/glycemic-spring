@@ -34,6 +34,7 @@ import com.glycemic.repository.UserRepository;
 import com.glycemic.repository.UserResetPasswordRepository;
 import com.glycemic.request.ActivationRequest;
 import com.glycemic.request.LoginRequest;
+import com.glycemic.request.ResetPasswordRequest;
 import com.glycemic.response.LoginResponse;
 import com.glycemic.security.UserDetailsImpl;
 import com.glycemic.util.EResultInfo;
@@ -323,12 +324,13 @@ public class AuthService {
 		return result;
 	}
 	
-	public LinkedHashMap<ResultTemplate,Object> resetPasswordForm(String email, String forgetKey){
+	public LinkedHashMap<ResultTemplate,Object> validateReset(String email, String forgetKey){
 		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
 		
 		result.put(EResultInfo.status, false);
 		result.put(EResultInfo.message, "Error: Parameters are invalid.");
 		result.put(EResultInfo.errors, HttpStatus.BAD_REQUEST);
+		result.put(EResultInfo.result, EStatus.INVALID.ordinal());
 		
 		Optional<UserResetPassword> resetOpt = resetPasswordRepo.findByUserEmailAndUuid(email, forgetKey);
 		
@@ -339,7 +341,7 @@ public class AuthService {
 				result.put(EResultInfo.status, false);
 				result.put(EResultInfo.message, "Error: Link already used.");
 				result.put(EResultInfo.errors, HttpStatus.OK);
-				result.put(EResultInfo.errors, EStatus.ALREADY.ordinal());
+				result.put(EResultInfo.result, EStatus.ALREADY.ordinal());
 			}
 			else if(reset.getCreatedDate() + resetExpireTime < System.currentTimeMillis()) {
 				result.put(EResultInfo.status, false);
@@ -354,6 +356,51 @@ public class AuthService {
 				result.put(EResultInfo.errors, HttpStatus.OK);
 				result.put(EResultInfo.result, EStatus.OK.ordinal());
 			}	
+		}
+		
+		return result;
+	}
+	
+	@Transactional
+	public LinkedHashMap<ResultTemplate,Object> resetPassword(ResetPasswordRequest resetReq){
+		LinkedHashMap<ResultTemplate,Object> result = new LinkedHashMap<>();
+		
+		result.put(EResultInfo.status, false);
+		result.put(EResultInfo.message, "Error: Parameters are invalid.");
+		result.put(EResultInfo.errors, HttpStatus.BAD_REQUEST);
+		result.put(EResultInfo.result, EStatus.INVALID.ordinal());
+		
+		Optional<UserResetPassword> resetOpt = resetPasswordRepo.findByUserEmailAndUuid(resetReq.getEmail(), resetReq.getForgetKey());
+		
+		if(resetOpt.isPresent()) {
+			
+			if(!resetReq.getPassword().equals(resetReq.getPasswordConfirm())) {
+				result.put(EResultInfo.status, false);
+				result.put(EResultInfo.message, "Error: Parameters are invalid.");
+				result.put(EResultInfo.errors, HttpStatus.OK);
+				result.put(EResultInfo.result, EStatus.EXPIRED.ordinal());
+			}
+			else if(!resetReq.getPassword().matches("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$")) {
+				result.put(EResultInfo.status, false);
+				result.put(EResultInfo.message, "Error: Password must be at least 8 characters long and contain uppercase letters, numbers and special characters.");
+				result.put(EResultInfo.errors, HttpStatus.OK);
+				result.put(EResultInfo.result, EStatus.ALREADY.ordinal());
+			}
+			else {
+				UserResetPassword reset = resetOpt.get();
+				Users user = reset.getUser();
+				
+				user.setPassword(encoder.encode(resetReq.getPassword()));
+				reset.setUsed(true);
+				
+				resetPasswordRepo.save(reset);
+				userRepo.save(user);
+				
+				result.put(EResultInfo.status, false);
+				result.put(EResultInfo.message, "Parola başarıyla değiştirildi.");
+				result.put(EResultInfo.errors, HttpStatus.OK);
+				result.put(EResultInfo.result, EStatus.OK.ordinal());
+			}
 		}
 		
 		return result;

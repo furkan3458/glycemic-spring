@@ -26,6 +26,7 @@ import com.glycemic.repository.JwtSessionRepository;
 import com.glycemic.repository.UserRepository;
 import com.glycemic.request.ActivationRequest;
 import com.glycemic.request.LoginRequest;
+import com.glycemic.request.ResetPasswordRequest;
 import com.glycemic.request.ValidateRequest;
 import com.glycemic.response.ValidateResponse;
 import com.glycemic.service.AuthService;
@@ -85,9 +86,17 @@ public class AuthController {
 		return new ResponseEntity<>(body,status);
 	}
 	
-	@GetMapping(path="/reset_password", params={"forgetKey","email"}, produces=MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> resetPasswordForm(@RequestParam("forgetKey") String forgetKey, @RequestParam("email") String email) {
-		LinkedHashMap<ResultTemplate,Object> body = authService.resetPasswordForm(email, forgetKey);
+	@GetMapping(path="/validate_reset", params={"forgetKey","email"}, produces=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> validateReset(@RequestParam("forgetKey") String forgetKey, @RequestParam("email") String email) {
+		LinkedHashMap<ResultTemplate,Object> body = authService.validateReset(email, forgetKey);
+		
+		HttpStatus status = (HttpStatus)body.get(EResultInfo.errors);
+		return new ResponseEntity<>(body,status);
+	}
+	
+	@PostMapping(path="/reset_password", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<LinkedHashMap<ResultTemplate,Object>> resetPassword(@RequestBody ResetPasswordRequest request) {
+		LinkedHashMap<ResultTemplate,Object> body = authService.resetPassword(request);
 		
 		HttpStatus status = (HttpStatus)body.get(EResultInfo.errors);
 		return new ResponseEntity<>(body,status);
@@ -123,6 +132,8 @@ public class AuthController {
 		
 		return ResponseEntity.ok(new ValidateResponse(true, 0, "Success."));
 	}
+	
+	
 	
 	@PostMapping(path="/logout", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> logout(@RequestBody ValidateRequest validateRequest) {
